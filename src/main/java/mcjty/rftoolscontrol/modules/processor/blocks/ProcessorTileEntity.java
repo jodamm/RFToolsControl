@@ -688,24 +688,28 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
     // items are grouped
     private List<Ingredient> combineIngredients(List<Ingredient> ingredients) {
         // @todo 1.15 can we solve this in a different way?
-//        List<Ingredient> needed = new ArrayList<>();
-//        for (Ingredient ingredient : ingredients) {
-////            if (!ingredient.isEmpty()) {
-//                boolean found = false;
-//                for (Ingredient neededStack : needed) {
-//                    if (ingredient.test(neededStack)) {
-//                        neededStack.grow(ingredient.getCount());
-//                        found = true;
-//                        break;
-//                    }
-//                }
-//                if (!found) {
-//                    needed.add(ingredient.copy());
-//                }
-////            }
-//        }
-//        return needed;
-        return ingredients;
+        List<ItemStack> needed = new ArrayList<>();
+        for (Ingredient ingredient : ingredients) {
+            ItemStack[] itemStacks = ingredient.getItems();
+            for (ItemStack itemStack : itemStacks) {
+                boolean found = false;
+                for (ItemStack neededStack : needed) {                  
+                    if (neededStack.sameItem(itemStack)) {
+                        neededStack.grow(itemStack.getCount());
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    needed.add(itemStack.copy());
+                }
+            }      
+        }
+        List<Ingredient> neededIng = new ArrayList<>();
+        for (ItemStack neededStack : needed) { 
+            neededIng.add(Ingredient.of(neededStack));            
+        }
+        return neededIng;
     }
 
     public int getIngredients(IProgram program, Inventory inv, Inventory cardInv, ItemStack inputStack, int slot1, int slot2) {
