@@ -14,6 +14,7 @@ import mcjty.lib.typed.Key;
 import mcjty.lib.typed.Type;
 import mcjty.lib.varia.BlockPosTools;
 import mcjty.lib.varia.ItemStackList;
+import mcjty.lib.container.AutomationFilterItemHander;
 import mcjty.rftoolsbase.api.control.parameters.Inventory;
 import mcjty.rftoolscontrol.modules.craftingstation.CraftingStationModule;
 import mcjty.rftoolscontrol.modules.craftingstation.client.GuiCraftingStation;
@@ -26,9 +27,11 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.util.LazyOptional;
@@ -56,6 +59,8 @@ public class CraftingStationTileEntity extends GenericTileEntity {
 
     @Cap(type = CapType.ITEMS_AUTOMATION)
     private final GenericItemHandler items = GenericItemHandler.basic(this, CONTAINER_FACTORY);
+
+    private final LazyOptional<CraftingStationItemHandler> automationItemHandlerSide = LazyOptional.of(() -> new CraftingStationItemHandler(items, null));
 
     @Cap(type = CapType.CONTAINER)
     private final LazyOptional<INamedContainerProvider> screenHandler = LazyOptional.of(() -> new DefaultContainerProvider<GenericContainer>("Crafter")
@@ -133,7 +138,7 @@ public class CraftingStationTileEntity extends GenericTileEntity {
                             .map(handlerAt -> ItemHandlerHelper.insertItem(handlerAt, stack, false))
                             .orElseThrow(() -> new ProgException(ExceptionType.EXCEPT_INVALIDINVENTORY));
                  } else {
-                    getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+                    return getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
                             .map(h -> ItemHandlerHelper.insertItem(h, stack, false))
                             .orElse(ItemStack.EMPTY);
                 }
@@ -141,6 +146,7 @@ public class CraftingStationTileEntity extends GenericTileEntity {
         }
         return stack;
     }
+    
 
     public void craftFail(String ticket) {
         for (CraftingRequest request : activeCraftingRequests) {
@@ -401,7 +407,6 @@ public class CraftingStationTileEntity extends GenericTileEntity {
         return -1;
     }
 
-
     public static final Key<String> PARAM_ITEMNAME = new Key<>("itemname", Type.STRING);
     public static final Key<String> PARAM_NBT = new Key<>("nbt", Type.STRING);
     public static final Key<Integer> PARAM_AMOUNT = new Key<>("amount", Type.INTEGER);
@@ -431,5 +436,32 @@ public class CraftingStationTileEntity extends GenericTileEntity {
     public static final ListCommand<?, ?> CMD_GETREQUESTS = ListCommand.<CraftingStationTileEntity, CraftingRequest>create("rftoolscontrol.station.getRequests",
             (te, player, params) -> te.getRequests(),
             (te, player, params, list) -> GuiCraftingStation.storeRequestsForClient(list));
+    
+    
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction facing) {
+        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return automationItemHandlerSide.cast();
+        }
+        return super.getCapability(cap, facing);
+    }
+            
+    public class CraftingStationItemHandler extends AutomationFilterItemHander {
 
+        private final Direction direction;
+
+        public CraftingStationItemHandler(GenericItemHandler wrapped, @Nullable Direction direction) {
+            super(wrapped);
+            this.direction = direction;
+        }
+
+        @Override
+        public boolean canAutomationInsert(int index) {
+            if (direction == null) {
+                return true;
+            } 
+            return false;
+        }
+    }
 }
