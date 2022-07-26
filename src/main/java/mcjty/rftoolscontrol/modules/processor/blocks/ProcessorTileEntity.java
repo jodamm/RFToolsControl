@@ -508,9 +508,9 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
     }
 
     public int pushItemsMulti(IProgram program, @Nullable Inventory inv, int slot1, int slot2, @Nullable Integer extSlot) {
-        return getHandlerForInv(inv).map(handler -> {
+        IItemHandler handler = getHandlerForInv(inv).map(handler2 -> { return handler2; } ).orElse(null);
+        {
             IStorageScanner scanner = getScannerForInv(inv);
-
             CardInfo info = this.cardInfo[((RunningProgram) program).getCardIndex()];
             int e = 0;
             if (extSlot != null) {
@@ -531,16 +531,17 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
                 e++;
             }
             return failed;
-        }).orElse(0);
+        }
     }
 
     public int countCardIngredients(IProgram program, @Nullable Inventory inv, ItemStack card) {
         IStorageScanner scanner = getScannerForInv(inv);
-        return getHandlerForInv(inv).map(handler -> {
+        IItemHandler handler = getHandlerForInv(inv).map(handler2 -> { return handler2; } ).orElse(null);
+        {
             List<Ingredient> ingredients = CraftingCardItem.getIngredients(card);
             List<Ingredient> needed = combineIngredients(ingredients);
             return countPossibleCrafts(scanner, handler, needed);
-        }).orElse(0);
+        }
     }
 
     public boolean checkIngredients(IProgram program, @Nonnull Inventory cardInv, ItemStack item, int slot1, int slot2) {
@@ -595,7 +596,8 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
     public int getIngredientsSmart(IProgram program, Inventory inv, @Nonnull Inventory cardInv,
                                    ItemStack inputStack, int slot1, int slot2, @Nonnull Inventory destInv) {
         IStorageScanner scanner = getScannerForInv(inv);
-        return getHandlerForInv(inv).map(handler -> {
+        IItemHandler handler = getHandlerForInv(inv).map(handler2 -> { return handler2; } ).orElse(null);
+        {          
             ItemStack item = inputStack;
             if (item.isEmpty()) {
                 item = getCraftResult(program);
@@ -642,7 +644,7 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
                 }
                 return 0;
             }).orElseThrow(() -> new ProgException(EXCEPT_INVALIDINVENTORY));
-        }).orElse(0);
+        }
     }
 
     // Check the storage scanner or handler for a list of ingredients. Any missing
@@ -714,7 +716,8 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
 
     public int getIngredients(IProgram program, Inventory inv, Inventory cardInv, ItemStack inputStack, int slot1, int slot2) {
         IStorageScanner scanner = getScannerForInv(inv);
-        return getHandlerForInv(inv).map(handler -> {
+        IItemHandler handler = getHandlerForInv(inv).map(handler2 -> { return handler2; } ).orElse(null);
+        {
             ItemStack item = inputStack;
             if (item.isEmpty()) {
                 item = getCraftResult(program);
@@ -759,7 +762,7 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
                 slot++;
             }
             return failed;
-        }).orElse(0);
+        }
     }
 
     public void craftWait(IProgram program, @Nonnull Inventory inv, ItemStack stack) {
@@ -1598,7 +1601,7 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
             return getItemHandlerAt(inv);
         }
     }
-
+  
     public boolean compareNBTTag(@Nonnull ItemStack v1, @Nonnull ItemStack v2, @Nonnull String tag) {
         if ((!v1.hasTag()) || (!v2.hasTag())) {
             return v1.hasTag() == v2.hasTag();
@@ -1773,7 +1776,8 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
         }
 
         IStorageScanner scanner = getScannerForInv(inv);
-        return getHandlerForInv(inv).map(handler -> {
+        IItemHandler handler = getHandlerForInv(inv).map(handler2 -> { return handler2; } ).orElse(null);
+        {
             CardInfo info = this.cardInfo[((RunningProgram) program).getCardIndex()];
             int realSlot = info.getRealSlot(virtualSlot);
 
@@ -1791,7 +1795,7 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
             stack = LogicInventoryTools.extractItem(handler, scanner, amount, routable, itemMatcher, slot);
             capability.insertItem(realSlot, stack, false);
             return stack.getCount();
-        }).orElse(0);
+        }
     }
 
     @Override
@@ -1804,7 +1808,8 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
 
     public int pushItems(IProgram program, Inventory inv, Integer slot, @Nullable Integer amount, int virtualSlot) {
         IStorageScanner scanner = getScannerForInv(inv);
-        return getHandlerForInv(inv).map(handler -> {
+        IItemHandler handler = getHandlerForInv(inv).map(handler2 -> { return handler2; } ).orElse(null);
+        {
             CardInfo info = this.cardInfo[((RunningProgram) program).getCardIndex()];
             int realSlot = info.getRealSlot(virtualSlot);
             IItemHandler itemHandler = items;
@@ -1819,7 +1824,7 @@ public class ProcessorTileEntity extends TickingTileEntity implements IProcessor
                 return extracted.getCount() - remaining.getCount();
             }
             return extracted.getCount();
-        }).orElse(0);
+        }
     }
 
     @Override
